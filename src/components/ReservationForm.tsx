@@ -1,8 +1,7 @@
 import React from 'react';
-import { format } from 'date-fns';
-import emailjs from '@emailjs/browser';
+import { format, differenceInDays } from 'date-fns';
 import { toast, Toaster } from 'react-hot-toast';
-import { emailConfig } from '../config/emailjs';
+import { sendReservationEmail } from '../config/emailjs';
 import { ReservationData } from '../types/reservation';
 
 interface ReservationFormProps {
@@ -20,9 +19,12 @@ interface ReservationFormProps {
   };
 }
 
+const PRICE_PER_NIGHT = 95; // EUR
+const PROPERTY_NAME = "Charming Flat in Ferney-Voltaire";
+const PROPERTY_ADDRESS = "Ferney-Voltaire, 01210, France";
+
 export default function ReservationForm({ selectedStartDate, selectedEndDate, onSubmit, translations }: ReservationFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const formRef = React.useRef<HTMLFormElement>(null);
   const [formData, setFormData] = React.useState<ReservationData>({
     name: '',
     email: '',
@@ -32,24 +34,37 @@ export default function ReservationForm({ selectedStartDate, selectedEndDate, on
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStartDate || !selectedEndDate || !formRef.current) return;
+    if (!selectedStartDate || !selectedEndDate) return;
 
     setIsSubmitting(true);
     const loadingToast = toast.loading('Sending reservation request...');
 
     try {
-      await emailjs.sendForm(
-        emailConfig.serviceId,
-        emailConfig.templateId,
-        formRef.current,
-        emailConfig.publicKey
-      );
+      // Calculate stay duration and total price
+      const numberOfNights = differenceInDays(selectedEndDate, selectedStartDate);
+      const totalPrice = numberOfNights * PRICE_PER_NIGHT;
+
+      // Send confirmation email to guest
+      await sendReservationEmail({
+        to_email: formData.email,
+        to_name: formData.name,
+        check_in_date: format(selectedStartDate, 'MMMM d, yyyy'),
+        check_out_date: format(selectedEndDate, 'MMMM d, yyyy'),
+        total_nights: numberOfNights,
+        total_price: totalPrice,
+        property_name: PROPERTY_NAME,
+        property_address: PROPERTY_ADDRESS
+      });
 
       toast.success('Reservation request sent successfully!', { id: loadingToast });
-      onSubmit(formData);
+      onSubmit({
+        ...formData,
+        startDate: selectedStartDate.toISOString(),
+        endDate: selectedEndDate.toISOString()
+      });
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error('Error processing reservation:', error);
       toast.error('Failed to send reservation request. Please try again.', { id: loadingToast });
     } finally {
       setIsSubmitting(false);
@@ -67,10 +82,7 @@ export default function ReservationForm({ selectedStartDate, selectedEndDate, on
   return (
     <>
       <Toaster position="top-right" />
-      <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-        <input type="hidden" name="check_in_date" value={format(selectedStartDate, 'MMMM d, yyyy')} />
-        <input type="hidden" name="check_out_date" value={format(selectedEndDate, 'MMMM d, yyyy')} />
-        
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">{translations.selectedDate}</label>
           <div className="px-4 py-2 bg-gray-50 rounded-lg text-gray-700">
