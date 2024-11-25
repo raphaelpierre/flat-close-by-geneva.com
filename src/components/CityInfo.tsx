@@ -16,7 +16,7 @@ export default function CityInfo({ lang }: CityInfoProps) {
       transportItems: [
         "5 minutes to Geneva Airport",
         "15 minutes to Geneva city center",
-        "Direct bus lines to Geneva (F, Y)",
+        "Direct bus lines to Geneva (60, 68)",
         "Easy access to CERN"
       ],
       attractions: "Local Attractions",
@@ -36,7 +36,7 @@ export default function CityInfo({ lang }: CityInfoProps) {
       transportItems: [
         "5 minutes de l'Aéroport de Genève",
         "15 minutes du centre de Genève",
-        "Lignes directes de bus vers Genève (F, Y)",
+        "Lignes directes de bus vers Genève (60, 68)",
         "Accès facile au CERN"
       ],
       attractions: "Attractions Locales",
@@ -53,12 +53,12 @@ export default function CityInfo({ lang }: CityInfoProps) {
 
   const CITY_IMAGES = [
     {
-      url: "https://images.unsplash.com/photo-1595659255945-e8539a32d736?auto=format&fit=crop&w=1200&q=80",
-      alt: "Château de Voltaire"
+      url: "https://www.seevisit.fr/uploads/compressed/seevisit_france_auvergne-rhone-alpes_ferney-voltaire_grand-rue_1_compressed.jpg",
+      alt: "Street view"
     },
     {
-      url: "https://images.unsplash.com/photo-1558642084-fd07fae5282e?auto=format&fit=crop&w=1200&q=80",
-      alt: "Geneva Lake view"
+      url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Ferney-Voltaire_-_fontaine_-_rue_de_Meyrin.jpg/1200px-Ferney-Voltaire_-_fontaine_-_rue_de_Meyrin.jpg",
+      alt: "Fountain view"
     }
   ];
 

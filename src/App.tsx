@@ -1,12 +1,13 @@
 import React from 'react';
 import { Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Calendar from './components/Calendar';
-import ReservationForm, { ReservationData } from './components/ReservationForm';
+import ReservationForm from './components/ReservationForm';
 import LanguageToggle from './components/LanguageToggle';
 import CityInfo from './components/CityInfo';
+import AdminPanel from './components/AdminPanel';
 import { translations } from './locales/translations';
 import { useReservations } from './hooks/useReservations';
-import { format } from 'date-fns';
+import Testimonials from './components/Testimonials';
 
 const APARTMENT_IMAGES = [
   {
@@ -29,35 +30,49 @@ function App() {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [lang, setLang] = React.useState<'en' | 'fr'>('en');
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const { getBookedDates, addReservation, isDateRangeAvailable } = useReservations();
   const t = translations[lang];
+  const { getBookedDates, addReservation, isDateRangeAvailable } = useReservations();
+
+  // Check if we're in admin mode
+  const isAdminMode = new URLSearchParams(window.location.search).has('admin');
+
+  // If in admin mode, show the admin panel
+  if (isAdminMode) {
+    return <AdminPanel />;
+  }
 
   const handleDateSelect = (date: Date) => {
     if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+      // Start new selection
       setSelectedStartDate(date);
       setSelectedEndDate(null);
     } else {
+      // Complete the selection
       if (date < selectedStartDate) {
         setSelectedStartDate(date);
-        setSelectedEndDate(null);
-      } else if (isDateRangeAvailable(selectedStartDate, date)) {
-        setSelectedEndDate(date);
+        setSelectedEndDate(selectedStartDate);
       } else {
-        alert(lang === 'en' ? 'Some dates in this range are already booked.' : 'Certaines dates de cette période sont déjà réservées.');
+        setSelectedEndDate(date);
       }
     }
   };
 
-  const handleReservation = (formData: ReservationData) => {
+  const handleReservation = async (formData: ReservationData) => {
     if (!selectedStartDate || !selectedEndDate) return;
 
-    addReservation({
-      startDate: format(selectedStartDate, 'yyyy-MM-dd'),
-      endDate: format(selectedEndDate, 'yyyy-MM-dd'),
-      name: formData.name,
-      email: formData.email
-    });
-    
+    if (!isDateRangeAvailable(selectedStartDate, selectedEndDate)) {
+      alert(lang === 'en' ? 'Selected dates are not available.' : 'Les dates sélectionnées ne sont pas disponibles.');
+      return;
+    }
+
+    const reservation = {
+      ...formData,
+      startDate: selectedStartDate.toISOString(),
+      endDate: selectedEndDate.toISOString()
+    };
+
+    addReservation(reservation);
+    alert(lang === 'en' ? 'Reservation request submitted! We will contact you soon.' : 'Demande de réservation envoyée ! Nous vous contacterons bientôt.');
     setSelectedStartDate(null);
     setSelectedEndDate(null);
   };
@@ -86,8 +101,8 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="space-y-8">
-            <div className="relative group">
+          <div className="space-y-6">
+            <div className="relative mb-8 group">
               <img
                 src={APARTMENT_IMAGES[currentImageIndex].url}
                 alt={APARTMENT_IMAGES[currentImageIndex].alt}
@@ -117,7 +132,6 @@ function App() {
                 ))}
               </div>
             </div>
-
             <div className="bg-white rounded-xl p-6 shadow-md">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.title}</h1>
               <p className="text-gray-600 mb-6">{t.description}</p>
@@ -141,8 +155,7 @@ function App() {
                 ))}
               </ul>
             </div>
-
-            <CityInfo lang={lang} />
+            <Testimonials lang={lang} />
           </div>
 
           <div className="space-y-6">
@@ -166,6 +179,7 @@ function App() {
                 translations={t.form}
               />
             </div>
+            <CityInfo lang={lang} />
           </div>
         </div>
       </main>

@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import emailjs from '@emailjs/browser';
 import { toast, Toaster } from 'react-hot-toast';
 import { emailConfig } from '../config/emailjs';
+import { ReservationData } from '../types/reservation';
 
 interface ReservationFormProps {
   selectedStartDate: Date | null;
@@ -17,13 +18,6 @@ interface ReservationFormProps {
     selectDate: string;
     selectedDate: string;
   };
-}
-
-export interface ReservationData {
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
 }
 
 export default function ReservationForm({ selectedStartDate, selectedEndDate, onSubmit, translations }: ReservationFormProps) {
