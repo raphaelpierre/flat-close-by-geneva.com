@@ -1,16 +1,24 @@
 import React from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isBefore, isAfter, addMonths, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isBefore, isAfter, addMonths, subMonths, isSameDay } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CalendarProps {
-  selectedDate: Date | null;
+  selectedStartDate: Date | null;
+  selectedEndDate: Date | null;
   onDateSelect: (date: Date) => void;
   bookedDates: Date[];
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
 }
 
-export default function Calendar({ selectedDate, onDateSelect, bookedDates, currentMonth, onMonthChange }: CalendarProps) {
+export default function Calendar({ 
+  selectedStartDate, 
+  selectedEndDate, 
+  onDateSelect, 
+  bookedDates, 
+  currentMonth, 
+  onMonthChange 
+}: CalendarProps) {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -24,6 +32,14 @@ export default function Calendar({ selectedDate, onDateSelect, bookedDates, curr
 
   const isDateSelectable = (date: Date) => {
     return !isDateBooked(date) && !isBefore(date, today);
+  };
+
+  const isDateInRange = (date: Date) => {
+    if (!selectedStartDate || !selectedEndDate) return false;
+    return (
+      (isAfter(date, selectedStartDate) || isSameDay(date, selectedStartDate)) &&
+      (isBefore(date, selectedEndDate) || isSameDay(date, selectedEndDate))
+    );
   };
 
   const getDayClasses = (date: Date) => {
@@ -41,8 +57,16 @@ export default function Calendar({ selectedDate, onDateSelect, bookedDates, curr
       return `${baseClasses} text-gray-300 cursor-not-allowed`;
     }
     
-    if (selectedDate && format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')) {
+    if (selectedStartDate && isSameDay(date, selectedStartDate)) {
       return `${baseClasses} bg-blue-600 text-white`;
+    }
+
+    if (selectedEndDate && isSameDay(date, selectedEndDate)) {
+      return `${baseClasses} bg-blue-600 text-white`;
+    }
+
+    if (isDateInRange(date)) {
+      return `${baseClasses} bg-blue-100 text-blue-600`;
     }
     
     if (isToday(date)) {
@@ -96,12 +120,12 @@ export default function Calendar({ selectedDate, onDateSelect, bookedDates, curr
           <span className="text-gray-600">Booked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full border-2 border-blue-600"></div>
-          <span className="text-gray-600">Today</span>
+          <div className="w-3 h-3 rounded-full bg-blue-100"></div>
+          <span className="text-gray-600">Selected Range</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-blue-600"></div>
-          <span className="text-gray-600">Selected</span>
+          <div className="w-3 h-3 rounded-full border-2 border-blue-600"></div>
+          <span className="text-gray-600">Today</span>
         </div>
       </div>
     </div>

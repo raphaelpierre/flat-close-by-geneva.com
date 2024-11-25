@@ -5,7 +5,8 @@ import { toast, Toaster } from 'react-hot-toast';
 import { emailConfig } from '../config/emailjs';
 
 interface ReservationFormProps {
-  selectedDate: Date | null;
+  selectedStartDate: Date | null;
+  selectedEndDate: Date | null;
   onSubmit: (formData: ReservationData) => void;
   translations: {
     name: string;
@@ -22,14 +23,13 @@ export interface ReservationData {
   name: string;
   email: string;
   phone: string;
-  date: Date;
   message: string;
 }
 
-export default function ReservationForm({ selectedDate, onSubmit, translations }: ReservationFormProps) {
+export default function ReservationForm({ selectedStartDate, selectedEndDate, onSubmit, translations }: ReservationFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const formRef = React.useRef<HTMLFormElement>(null);
-  const [formData, setFormData] = React.useState<Omit<ReservationData, 'date'>>({
+  const [formData, setFormData] = React.useState<ReservationData>({
     name: '',
     email: '',
     phone: '',
@@ -38,7 +38,7 @@ export default function ReservationForm({ selectedDate, onSubmit, translations }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || !formRef.current) return;
+    if (!selectedStartDate || !selectedEndDate || !formRef.current) return;
 
     setIsSubmitting(true);
     const loadingToast = toast.loading('Sending reservation request...');
@@ -52,7 +52,7 @@ export default function ReservationForm({ selectedDate, onSubmit, translations }
       );
 
       toast.success('Reservation request sent successfully!', { id: loadingToast });
-      onSubmit({ ...formData, date: selectedDate });
+      onSubmit(formData);
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (error) {
       console.error('Error sending email:', error);
@@ -62,7 +62,7 @@ export default function ReservationForm({ selectedDate, onSubmit, translations }
     }
   };
 
-  if (!selectedDate) {
+  if (!selectedStartDate || !selectedEndDate) {
     return (
       <div className="p-4 bg-gray-50 rounded-lg text-center">
         <p className="text-gray-600">{translations.selectDate}</p>
@@ -74,12 +74,13 @@ export default function ReservationForm({ selectedDate, onSubmit, translations }
     <>
       <Toaster position="top-right" />
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-        <input type="hidden" name="reservation_date" value={format(selectedDate, 'MMMM d, yyyy')} />
+        <input type="hidden" name="check_in_date" value={format(selectedStartDate, 'MMMM d, yyyy')} />
+        <input type="hidden" name="check_out_date" value={format(selectedEndDate, 'MMMM d, yyyy')} />
         
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">{translations.selectedDate}</label>
           <div className="px-4 py-2 bg-gray-50 rounded-lg text-gray-700">
-            {format(selectedDate, 'MMMM d, yyyy')}
+            {format(selectedStartDate, 'MMMM d, yyyy')} - {format(selectedEndDate, 'MMMM d, yyyy')}
           </div>
         </div>
 

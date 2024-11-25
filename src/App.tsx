@@ -3,15 +3,10 @@ import { Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Calendar from './components/Calendar';
 import ReservationForm, { ReservationData } from './components/ReservationForm';
 import LanguageToggle from './components/LanguageToggle';
+import CityInfo from './components/CityInfo';
 import { translations } from './locales/translations';
-
-const BOOKED_DATES = [
-  new Date(2024, 2, 15),
-  new Date(2024, 2, 16),
-  new Date(2024, 2, 17),
-  new Date(2024, 2, 25),
-  new Date(2024, 2, 26),
-];
+import { useReservations } from './hooks/useReservations';
+import { format } from 'date-fns';
 
 const APARTMENT_IMAGES = [
   {
@@ -29,16 +24,42 @@ const APARTMENT_IMAGES = [
 ];
 
 function App() {
-  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [selectedStartDate, setSelectedStartDate] = React.useState<Date | null>(null);
+  const [selectedEndDate, setSelectedEndDate] = React.useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [lang, setLang] = React.useState<'en' | 'fr'>('en');
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+  const { getBookedDates, addReservation, isDateRangeAvailable } = useReservations();
   const t = translations[lang];
 
+  const handleDateSelect = (date: Date) => {
+    if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+      setSelectedStartDate(date);
+      setSelectedEndDate(null);
+    } else {
+      if (date < selectedStartDate) {
+        setSelectedStartDate(date);
+        setSelectedEndDate(null);
+      } else if (isDateRangeAvailable(selectedStartDate, date)) {
+        setSelectedEndDate(date);
+      } else {
+        alert(lang === 'en' ? 'Some dates in this range are already booked.' : 'Certaines dates de cette période sont déjà réservées.');
+      }
+    }
+  };
+
   const handleReservation = (formData: ReservationData) => {
-    console.log('Reservation submitted:', formData);
-    alert(lang === 'en' ? 'Reservation request submitted! We will contact you soon.' : 'Demande de réservation envoyée ! Nous vous contacterons bientôt.');
-    setSelectedDate(null);
+    if (!selectedStartDate || !selectedEndDate) return;
+
+    addReservation({
+      startDate: format(selectedStartDate, 'yyyy-MM-dd'),
+      endDate: format(selectedEndDate, 'yyyy-MM-dd'),
+      name: formData.name,
+      email: formData.email
+    });
+    
+    setSelectedStartDate(null);
+    setSelectedEndDate(null);
   };
 
   const nextImage = () => {
@@ -65,8 +86,8 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div>
-            <div className="relative mb-8 group">
+          <div className="space-y-8">
+            <div className="relative group">
               <img
                 src={APARTMENT_IMAGES[currentImageIndex].url}
                 alt={APARTMENT_IMAGES[currentImageIndex].alt}
@@ -96,6 +117,7 @@ function App() {
                 ))}
               </div>
             </div>
+
             <div className="bg-white rounded-xl p-6 shadow-md">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.title}</h1>
               <p className="text-gray-600 mb-6">{t.description}</p>
@@ -119,15 +141,18 @@ function App() {
                 ))}
               </ul>
             </div>
+
+            <CityInfo lang={lang} />
           </div>
 
           <div className="space-y-6">
             <div className="bg-white rounded-xl p-6 shadow-md">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.checkAvailability}</h2>
               <Calendar
-                selectedDate={selectedDate}
-                onDateSelect={setSelectedDate}
-                bookedDates={BOOKED_DATES}
+                selectedStartDate={selectedStartDate}
+                selectedEndDate={selectedEndDate}
+                onDateSelect={handleDateSelect}
+                bookedDates={getBookedDates()}
                 currentMonth={currentMonth}
                 onMonthChange={setCurrentMonth}
               />
@@ -135,7 +160,8 @@ function App() {
             <div className="bg-white rounded-xl p-6 shadow-md">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">{t.makeReservation}</h2>
               <ReservationForm
-                selectedDate={selectedDate}
+                selectedStartDate={selectedStartDate}
+                selectedEndDate={selectedEndDate}
                 onSubmit={handleReservation}
                 translations={t.form}
               />

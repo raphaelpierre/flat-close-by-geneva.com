@@ -25,7 +25,7 @@ interface Translations {
 export const translations: Translations = {
   en: {
     title: "Charming Flat in Ferney-Voltaire",
-    description: "Experience the perfect blend of French charm and Swiss proximity in our beautifully furnished apartment in Ferney-Voltaire. Just minutes from Geneva and CERN, this modern flat offers an ideal location for professionals and travelers. Enjoy easy access to both the French countryside and Swiss city life.",
+    description: "Experience the perfect blend of French charm and Swiss proximity in our beautifully furnished apartment in Ferney-Voltaire (01210). Just minutes from Geneva Airport and CERN, this modern flat offers an ideal location for professionals and travelers. Enjoy the convenience of Swiss city life while embracing the charm of a historic French town, home to Voltaire's château.",
     amenities: {
       title: "Amenities",
       items: [
@@ -47,13 +47,13 @@ export const translations: Translations = {
       phone: "Phone",
       message: "Message (Optional)",
       submit: "Request Reservation",
-      selectDate: "Please select a date to make a reservation",
-      selectedDate: "Selected Date"
+      selectDate: "Please select dates to make a reservation",
+      selectedDate: "Selected Dates"
     }
   },
   fr: {
     title: "Charmant Appartement à Ferney-Voltaire",
-    description: "Découvrez le parfait mélange entre le charme français et la proximité suisse dans notre appartement meublé à Ferney-Voltaire. À quelques minutes de Genève et du CERN, ce logement moderne offre un emplacement idéal pour les professionnels et les voyageurs. Profitez d'un accès facile à la campagne française et à la vie citadine suisse.",
+    description: "Découvrez le parfait mélange entre le charme français et la proximité suisse dans notre appartement meublé à Ferney-Voltaire (01210). À quelques minutes de l'Aéroport de Genève et du CERN, ce logement moderne offre un emplacement idéal pour les professionnels et les voyageurs. Profitez de la commodité de la vie citadine suisse tout en embrassant le charme d'une ville historique française, abritant le château de Voltaire.",
     amenities: {
       title: "Équipements",
       items: [
@@ -75,8 +75,8 @@ export const translations: Translations = {
       phone: "Téléphone",
       message: "Message (Optionnel)",
       submit: "Demander une Réservation",
-      selectDate: "Veuillez sélectionner une date pour faire une réservation",
-      selectedDate: "Date Sélectionnée"
+      selectDate: "Veuillez sélectionner des dates pour faire une réservation",
+      selectedDate: "Dates Sélectionnées"
     }
   }
 };
